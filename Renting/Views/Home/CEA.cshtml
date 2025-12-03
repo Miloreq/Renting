@@ -1,0 +1,51 @@
+﻿@{
+    ViewData["Title"] = "Create / Edit";
+}
+
+@model Renting.Models.Asset
+
+<div class="text-center">
+    <h1 class="display-4">Create or edit</h1>
+</div>
+
+<form asp-action="CEAForm" asp-controller="Home" method="post">
+    <input hidden class="form-control" type="number" palceholder="0" asp-for="Id"/>
+
+    <label class="mt-4">Nazwa</label>
+    <input class="form-control" type="text" placeholder="Dodaj Nazwe" asp-for="Name" />
+
+    <label class="mt-4">Producent</label>
+    <input class="form-control" type="text" placeholder="Dodaj Producenta" asp-for="Manufacturer"/>
+
+    <label class="mt-4">Model</label>
+    <input class="form-control" type="text" placeholder="Dodaj Model" asp-for="Model" />
+
+    <label class="mt-4">Numer Seryjny</label>
+    <input class="form-control" type="text" placeholder="Dodaj Numer Seryjny" asp-for="SerialNumber" />
+
+    <label class="mt-4">Kod Inwentarzu</label>
+    <input class="form-control" type="number" placeholder="Dodaj Kod" asp-for="InventoryCode" />
+
+    <label class="mt-4">Kondycja</label>
+    @if (ViewBag.Categories != null)
+    {
+        <select class="form-control" asp-for="Condition" asp-items="@(new Microsoft.AspNetCore.Mvc.Rendering.SelectList(ViewBag.Categories as IEnumerable<Renting.Models.Stanenum>))">
+            <option value="">-- Kondycja? --</option>
+           </select>
+       }
+       else
+       {
+           <div class="text-danger">Brak dostępnych kategorii kondycji.</div>
+       }
+
+    <label class="mt-4">Locacja</label>
+    <input class="form-control" type="text" placeholder="Dodaj Lokacje" asp-for="Location" />
+
+    <label class="mt-4">Aktywne?</label>
+    <select class="form-control" asp-for="IsActive">
+        <option value="True">Działa</option>
+        <option value="False">Niedziała</option>
+    </select>
+
+    <button class="btn btn-primary mt-4" type="submit">Ok</button>
+</form>

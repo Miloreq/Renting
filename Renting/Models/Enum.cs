@@ -18,4 +18,10 @@ namespace Renting.Models
         Urzywany,
         Uszkodzony
     }
+
+    public enum TFenum
+    { 
+        True,
+        False
+    }
 }

@@ -144,3 +144,4 @@ C:\Users\idk\source\repos\Renting\Renting\bin\Debug\net8.0\runtimes\win\lib\net6
 C:\Users\idk\source\repos\Renting\Renting\bin\Debug\net8.0\runtimes\win\lib\net6.0\System.Windows.Extensions.dll
 C:\Users\idk\source\repos\Renting\Renting\obj\Debug\net8.0\Renting.csproj.AssemblyReference.cache
 C:\Users\idk\source\repos\Renting\Renting\obj\Debug\net8.0\Renting.csproj.Up2Date
+C:\Users\idk\source\repos\Renting\Renting\obj\Debug\net8.0\Renting.sourcelink.json

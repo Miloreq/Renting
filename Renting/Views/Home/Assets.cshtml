@@ -1,0 +1,53 @@
+@{
+    ViewData["Title"] = "Magazyn";
+}
+
+@model List<Asset>
+
+<div class="text-center">
+    <h1 class="display-4">Wydatki</h1>
+    <hr />
+    <a asp-controller="Home" asp-action="CEA" class="btn btn-primary">Dodawaj/Edytuj</a>
+    <br />
+    <hr />
+    <table class="table w-75 mx-auto">
+        <thead>
+            <tr>
+                <th>Nazwa</th>
+                <th>Producent</th>
+                <th>Model</th>
+                <th>Numer Seryjny</th>
+                <th>Kod Inventarzu</th>
+                <th>Kondycja</th>
+                <th>Lokalizacja</th>
+                <th>Dzia³a?</th>
+                <th>Akcje</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                foreach (var asset in Model)
+                {
+                    <tr>
+                        <td>@asset.Name</td>
+                        <td>@asset.Manufacturer</td>
+                        <td>@asset.Model</td>
+                        <td>@asset.SerialNumber</td>
+                        <td>@asset.InventoryCode</td>
+                        <td>@asset.Condition</td>
+                        <td>@asset.Location</td>
+                        @if (asset.IsActive == true) {<td>Dzia³a</td>} else {<td>Niedzia³a</td>}
+                        <td>
+                            <a asp-action="CEA" asp-route-id="@asset.Id" class="maxbtn text-decoration-none"><span class="me-1">&#x270E;</span></a>
+                            <a asp-action="DelAssets" asp-route-id="@asset.Id" class="maxbtn text-decoration-none"><span class="me-1">&#x1F5D1;</span></a>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
+
+
+
+
