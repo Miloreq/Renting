@@ -1,0 +1,30 @@
+﻿@model Renting.Models.Rental
+
+@{
+    ViewData["Title"] = "Create Rental";
+}
+
+<h2>Nowe wypożyczenie</h2>
+
+<!-- Dodaj poniżej, nad formularzem -->
+@Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+<form asp-action="CreateRentalForm" asp-controller="">
+    <input hidden class="form-control" type="number" palceholder="0" asp-for="Id" />
+
+    <label>Asset</label>
+    <select asp-for="AssetId" class="form-control" asp-items="ViewBag.Assets">
+        <option value="">-- Wybierz asset --</option>
+    </select>
+
+    <label>Od kiedy</label>
+    <input asp-for="FromDate" class="form-control" type="date" />
+
+    <label>Do kiedy</label>
+    <input asp-for="ToDate" class="form-control" type="date" />
+
+    <label>Notatka</label>
+    <textarea asp-for="Notes" class="form-control"></textarea>
+
+    <button class="btn btn-primary mt-4" type="submit">Ok</button>
+</form>

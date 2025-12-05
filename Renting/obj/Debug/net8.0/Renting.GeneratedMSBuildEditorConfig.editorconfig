@@ -38,12 +38,20 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxWZXJpZnlFbWFpbC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/idk/source/repos/Renting/Renting/Views/Home/AdminRentals.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxBZG1pblJlbnRhbHMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/idk/source/repos/Renting/Renting/Views/Home/Assets.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxBc3NldHMuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/idk/source/repos/Renting/Renting/Views/Home/CEA.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxDRUEuY3NodG1s
+[C:/Users/idk/source/repos/Renting/Renting/Views/Home/CreateEditAsset.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxDcmVhdGVFZGl0QXNzZXQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/idk/source/repos/Renting/Renting/Views/Home/CreateRental.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxDcmVhdGVSZW50YWwuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/idk/source/repos/Renting/Renting/Views/Home/Index.cshtml]
@@ -52,6 +60,10 @@ build_metadata.AdditionalFiles.CssScope =
 
 [C:/Users/idk/source/repos/Renting/Renting/Views/Home/Privacy.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxQcml2YWN5LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/idk/source/repos/Renting/Renting/Views/Home/UserRentals.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxVc2VyUmVudGFscy5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/idk/source/repos/Renting/Renting/Views/Shared/Error.cshtml]

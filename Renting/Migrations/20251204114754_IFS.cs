@@ -5,18 +5,25 @@
 namespace Renting.Migrations
 {
     /// <inheritdoc />
-    public partial class seed3 : Migration
+    public partial class IFS : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-
+            migrationBuilder.AddColumn<int>(
+                name: "Status",
+                table: "Rentals",
+                type: "int",
+                nullable: false,
+                defaultValue: 0);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-
+            migrationBuilder.DropColumn(
+                name: "Status",
+                table: "Rentals");
         }
     }
 }

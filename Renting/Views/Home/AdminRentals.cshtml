@@ -1,0 +1,90 @@
+﻿@using Renting.Models
+@{
+    ViewData["Title"] = "Wyporzyczenia";
+    var statusList = Enum.GetValues(typeof(Statusenum)).Cast<Statusenum>().ToList();
+    var assetsList = ViewBag.Assets as List<Asset>;
+    var selectedStatus = Context.Request.Query["status"].ToString();
+    var selectedAssetId = Context.Request.Query["assetId"].ToString();
+}
+
+@model List<Rental>
+
+<div class="text-center">
+    <h1 class="display-4">Wyporzyczenia</h1>
+    <hr />
+    <br />
+    <hr />
+    <br />
+
+    <form method="get" asp-action="AdminRentals" class="mb-4 w-75 mx-auto">
+        <div class="row">
+            <div class="col">
+                <select name="status" class="form-select">
+                    <option value="">Wszystkie statusy</option>
+                    @foreach (var status in statusList)
+                    {
+                        var isSelected = selectedStatus == status.ToString() ? "selected" : "";
+                        <option value="@status" selected="@(isSelected == "selected")">@status</option>
+                    }
+                </select>
+            </div>
+            <div class="col">
+                <input type="date" name="fromDate" class="form-control" value="@Context.Request.Query["fromDate"]" placeholder="Od" />
+            </div>
+            <div class="col">
+                <input type="date" name="toDate" class="form-control" value="@Context.Request.Query["toDate"]" placeholder="Do" />
+            </div>
+            <div class="col">
+                <select name="assetId" class="form-select">
+                    <option value="">Wszystkie sprzęty</option>
+                    @if (assetsList != null)
+                    {
+                        foreach (var asset in assetsList)
+                        {
+                            var isSelected = selectedAssetId == asset.Id.ToString() ? "selected" : "";
+                            <option value="@asset.Id" selected="@(isSelected == "selected")">@asset.Name</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="col">
+                <button type="submit" class="btn btn-secondary">Filtruj</button>
+            </div>
+        </div>
+    </form>
+
+    <table class="table w-75 mx-auto">
+        <thead>
+            <tr>
+                <th>Status</th>
+                <th>Od</th>
+                <th>Do</th>
+                <th>Przedmiot</th>
+                <th>Notatki</th>
+                <th>Akcje</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var rental in Model)
+            {
+                <tr>
+                    <td>@rental.Status</td>
+                    <td>@rental.FromDate.ToShortDateString()</td>
+                    <td>@rental.ToDate.ToShortDateString()</td>
+                    <td>@(rental.Assets?.Name ?? "-")</td>
+                    <td>@rental.Notes</td>
+                    <td>
+                        <form asp-action="CancelRental" asp-controller="Home" method="post" style="display:inline;">
+                            <input type="hidden" name="id" value="@rental.Id" />
+                            <button type="submit" class="btn btn-danger">Anuluj</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+
+
+

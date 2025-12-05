@@ -30,6 +30,13 @@
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Assets">Magazyn</a>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="AdminRentals">Wyporzyczenia</a>
+                            </li>
+                        } @if (User.IsInRole("User")){
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="UserRentals">Moje wypożyczenia</a>
+                            </li>
                         }
                         <partial name="_LoginPartial"/>
                     </ul>

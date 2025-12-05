@@ -1,0 +1,50 @@
+﻿@{
+    ViewData["Title"] = "Moje Wyporzyczenia";
+}
+
+@model List<Rental>
+
+<div class="text-center">
+    <h1 class="display-4">Moje Wyporzyczenia</h1>
+    <hr />
+    <a asp-controller="Home" asp-action="CEE" class="btn btn-primary">Dodawaj/Edytuj</a>
+    <br />
+    <hr />
+    <br />
+    <table class="table w-75 mx-auto">
+        <thead>
+            <tr>
+                <th>Status</th>
+                <th>Od</th>
+                <th>Do</th>
+                <th>Przedmiot</th>
+                <th>Notatki</th>
+                <th>Akcje</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                foreach (var rental in Model)
+                {
+                    <tr>
+                        <td>@rental.Status</td>
+                        <td>@rental.FromDate</td>
+                        <td>@rental.ToDate</td>
+                        <td>@(rental.Assets?.Name ?? "-")</td>
+                        <td>@rental.Notes</td>
+                        <td>
+                            <form asp-action="CancelRental" asp-controller="Home" method="post">
+                                <input type="hidden" name="id" value="@rental.Id" />
+                                <button type="submit" class="btn btn-danger">Anuluj</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
+
+
+
+

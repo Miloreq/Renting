@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Renting.Data;
 using Renting.Models;
 using System.Diagnostics;
+using System.Security.Claims;
 
 namespace Renting.Controllers
 {
@@ -15,10 +17,14 @@ namespace Renting.Controllers
 
         private readonly RentingContext _context;
 
-       public HomeController(RentingContext context, ILogger<HomeController> logger)
+        private readonly UserManager<User> _userManager;
+
+
+        public HomeController(RentingContext context, ILogger<HomeController> logger, UserManager<User> userManager)
         {
             _context = context;
             _logger = logger;
+            _userManager = userManager;
         }
 
         public IActionResult Index()
@@ -31,6 +37,98 @@ namespace Renting.Controllers
             return View();
         }
 
+        [Authorize(Roles = "Admin")]
+        public IActionResult AdminRentals(string status, DateTime? fromDate, DateTime? toDate, int? assetId)
+        {
+            var rentalsQuery = _context.Rentals.Include(r => r.Assets).AsQueryable();
+
+            if (!string.IsNullOrEmpty(status) && Enum.TryParse<Statusenum>(status, out var statusEnum))
+            {
+                rentalsQuery = rentalsQuery.Where(r => r.Status == statusEnum);
+            }
+            if (fromDate.HasValue)
+            {
+                rentalsQuery = rentalsQuery.Where(r => r.FromDate >= fromDate.Value);
+            }
+            if (toDate.HasValue)
+            {
+                rentalsQuery = rentalsQuery.Where(r => r.ToDate <= toDate.Value);
+            }
+            if (assetId.HasValue)
+            {
+                rentalsQuery = rentalsQuery.Where(r => r.AssetId == assetId.Value);
+            }
+
+            var rentals = rentalsQuery.ToList();
+            var assets = _context.Assets.ToList();
+            ViewBag.Assets = assets;
+
+            return View(rentals);
+        }
+
+        [Authorize]
+        public async Task<IActionResult> UserRentals() { 
+            var userId = _userManager.GetUserId(User);
+            var rentalsList = await _context.Rentals
+                .Include(r => r.Assets)
+                .Where(r => r.UserId == userId)
+                .ToListAsync();
+
+            return View(rentalsList);
+        }
+
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> CancelRental(int id)
+        {
+            var userId = _userManager.GetUserId(User);
+            var rental = await _context.Rentals.FirstOrDefaultAsync(r => r.Id == id);
+
+            if (rental == null)
+            {
+                return NotFound();
+            }
+
+            // Tylko w³aœciciel lub admin mo¿e anulowaæ
+            bool isAdmin = User.IsInRole("Admin");
+            if (rental.UserId != userId && !isAdmin)
+            {
+                return Forbid();
+            }
+
+            if (rental.Status == Statusenum.CheckedOut)
+            {
+                TempData["Message"] = "Nie mo¿na anulowaæ wynajmu, który jest w trakcie realizacji.";
+                return isAdmin
+                    ? RedirectToAction(nameof(AdminRentals))
+                    : RedirectToAction(nameof(UserRentals));
+            }
+
+            if (rental.Status == Statusenum.Returned)
+            {
+                TempData["Message"] = "Nie mo¿na anulowaæ wynajmu, który zosta³ zakoñczony.";
+                return isAdmin
+                    ? RedirectToAction(nameof(AdminRentals))
+                    : RedirectToAction(nameof(UserRentals));
+            }
+
+            if (rental.Status == Statusenum.Cancelled)
+            {
+                TempData["Message"] = "Wynajem ju¿ zosta³ anulowany.";
+                return isAdmin
+                    ? RedirectToAction(nameof(AdminRentals))
+                    : RedirectToAction(nameof(UserRentals));
+            }
+
+            rental.Status = Statusenum.Cancelled;
+            await _context.SaveChangesAsync();
+
+            TempData["Message"] = "Wynajem zosta³ anulowany.";
+            return isAdmin
+                ? RedirectToAction(nameof(AdminRentals))
+                : RedirectToAction(nameof(UserRentals));
+        }
+
         [Authorize(Roles ="Admin")]
         public IActionResult Assets()
         {
@@ -39,7 +137,7 @@ namespace Renting.Controllers
             return View(assets);
         }
 
-        public IActionResult CEA()
+        public IActionResult CreateEditAsset()
         {
             ViewBag.Categories = Enum.GetValues(typeof(Renting.Models.Stanenum)).Cast<Renting.Models.Stanenum>();
             ViewBag.TF = Enum.GetValues(typeof(Renting.Models.TFenum)).Cast<Renting.Models.TFenum>();
@@ -47,7 +145,7 @@ namespace Renting.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CEAForm(Asset assetModel)
+        public async Task<IActionResult> CreateEditAssetForm(Asset assetModel)
         {
             if (!User.Identity.IsAuthenticated)
                 return Forbid();
@@ -73,6 +171,86 @@ namespace Renting.Controllers
                 _context.SaveChanges();
             }
             return RedirectToAction("Assets");
+        }
+
+        public IActionResult CreateRental(int? id)
+        {
+            var assets = _context.Assets.ToList();
+            ViewBag.Assets = assets
+                .Select(a => new SelectListItem
+                {
+                    Value = a.Id.ToString(),
+                    Text = a.Name // lub inna w³aœciwoœæ opisuj¹ca
+                })
+                .ToList();
+
+            if (id != null)
+            {
+                var assetInDb = _context.Rentals.SingleOrDefault(asset => asset.Id == id);
+                return View(assetInDb);
+            }
+
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateRentalForm(Rental model)
+        {
+            if (!User.Identity.IsAuthenticated)
+                return Forbid();
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Forbid();
+            model.UserId = userId;
+
+            // Walidacja: FromDate nie mo¿e byæ po ToDate
+            if (model.FromDate > model.ToDate)
+            {
+                ModelState.AddModelError("", "Data rozpoczêcia nie mo¿e byæ po dacie zakoñczenia.");
+                ViewBag.Assets = _context.Assets
+                    .Select(a => new SelectListItem
+                    {
+                        Value = a.Id.ToString(),
+                        Text = a.Name
+                    })
+                    .ToList();
+                return View("CreateRental", model);
+            }
+
+            // Sprawdzenie kolizji dat dla tego samego AssetId
+            bool isCollision = _context.Rentals
+                .Any(r =>
+                    r.AssetId == model.AssetId &&
+                    r.Id != model.Id &&
+                    r.FromDate <= model.ToDate &&
+                    r.ToDate >= model.FromDate);
+
+            if (isCollision)
+            {
+                ModelState.AddModelError(string.Empty, "Wybrany przedmiot jest ju¿ wynajêty w podanym okresie.");
+                ViewBag.Assets = _context.Assets
+                    .Select(a => new SelectListItem
+                    {
+                        Value = a.Id.ToString(),
+                        Text = a.Name
+                    })
+                    .ToList();
+                return View("CreateRental", model);
+            }
+
+            if (model.Id == 0)
+            {
+                model.Status = Statusenum.Pending;
+                _context.Rentals.Add(model);
+            }
+            else
+            {
+                _context.Rentals.Update(model);
+            }
+
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

@@ -9,7 +9,7 @@ namespace Renting.Services
         public static async Task SeedDataBase(IServiceProvider serviceProvider)
         {
             using var scope = serviceProvider.CreateScope();
-            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>(); // AppDbContext
             var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
             var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
             var logger = scope.ServiceProvider.GetRequiredService<ILogger<SeedService>>();
