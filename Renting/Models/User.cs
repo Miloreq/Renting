@@ -7,7 +7,7 @@ namespace Renting.Models
     {
         public string FullName { get; set; }
 
-        public ICollection<Rental> Rentals { get; set; }
+        public ICollection<Rental> Rentals { get; set; } = new List<Rental>();
 
     }
 }

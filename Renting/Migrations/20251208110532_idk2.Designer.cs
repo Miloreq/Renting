@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Renting.Data;
 
@@ -11,9 +12,11 @@ using Renting.Data;
 namespace Renting.Migrations
 {
     [DbContext(typeof(RentingContext))]
-    partial class RentingContextModelSnapshot : ModelSnapshot
+    [Migration("20251208110532_idk2")]
+    partial class idk2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -206,11 +209,8 @@ namespace Renting.Migrations
                     b.Property<DateTime?>("CheckedOutAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Condition")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("DamageNotes")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<string>("CheckedOutById")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("FromDate")
                         .HasColumnType("datetime2");
@@ -218,9 +218,6 @@ namespace Renting.Migrations
                     b.Property<string>("Notes")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("ReturnedAt")
-                        .HasColumnType("datetime2");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
@@ -235,6 +232,8 @@ namespace Renting.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AssetId");
+
+                    b.HasIndex("CheckedOutById");
 
                     b.HasIndex("UserId");
 
@@ -367,19 +366,28 @@ namespace Renting.Migrations
                         .WithMany()
                         .HasForeignKey("AssetId");
 
+                    b.HasOne("Renting.Models.User", "CheckedOutBy")
+                        .WithMany("CheckedOutRentals")
+                        .HasForeignKey("CheckedOutById")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("Renting.Models.User", "User")
                         .WithMany("Rentals")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Assets");
+
+                    b.Navigation("CheckedOutBy");
 
                     b.Navigation("User");
                 });
 
             modelBuilder.Entity("Renting.Models.User", b =>
                 {
+                    b.Navigation("CheckedOutRentals");
+
                     b.Navigation("Rentals");
                 });
 #pragma warning restore 612, 618

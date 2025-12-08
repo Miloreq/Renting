@@ -13,8 +13,6 @@
     <h1 class="display-4">Wyporzyczenia</h1>
     <hr />
     <br />
-    <hr />
-    <br />
 
     <form method="get" asp-action="AdminRentals" class="mb-4 w-75 mx-auto">
         <div class="row">
@@ -61,7 +59,9 @@
                 <th>Do</th>
                 <th>Przedmiot</th>
                 <th>Notatki</th>
-                <th>Akcje</th>
+                <th>Stan po zwrocie</th>
+                <th>Notatki o uszkodzeniach</th>
+                <th colspan="2">Akcje</th>
             </tr>
         </thead>
         <tbody>
@@ -73,12 +73,48 @@
                     <td>@rental.ToDate.ToShortDateString()</td>
                     <td>@(rental.Assets?.Name ?? "-")</td>
                     <td>@rental.Notes</td>
-                    <td>
-                        <form asp-action="CancelRental" asp-controller="Home" method="post" style="display:inline;">
-                            <input type="hidden" name="id" value="@rental.Id" />
-                            <button type="submit" class="btn btn-danger">Anuluj</button>
-                        </form>
-                    </td>
+                    <td>@rental.Condition</td>
+                    <td>@rental.DamageNotes</td>
+                    @if (@rental.Status == Statusenum.Pending) 
+                    {
+                        <td>
+                            <form asp-action="Approve" asp-controller="Home" method="post" style="display:inline;">
+                                <input type="hidden" name="id" value="@rental.Id" />
+                                <button type="submit" class="btn btn-danger">Accept</button>
+                            </form>
+                        </td>
+                        <td>
+                            <form asp-action="Reject" asp-controller="Home" method="post" style="display:inline;">
+                                <input type="hidden" name="id" value="@rental.Id" />
+                                <button type="submit" class="btn btn-danger">Reject</button>
+                            </form>
+                        </td>
+                    }
+                    @if (@rental.Status == Statusenum.Approved)
+                    {
+                        <td>
+                            <form asp-action="CheckOut" asp-controller="Home" method="post" style="display:inline;">
+                                <input type="hidden" name="id" value="@rental.Id" />
+                                <button type="submit" class="btn btn-danger">Check Out</button>
+                            </form>
+                        </td>
+                    }
+                    @if (@rental.Status == Statusenum.CheckedOut)
+                    {
+                        <td>
+                            <form asp-action="Return" asp-controller="Home" method="post" style="display:inline;">
+                                <input type="hidden" name="id" value="@rental.Id" />
+                                <select name="condition" class="form-control mb-1" required>
+                                    @foreach (var stan in Enum.GetValues(typeof(Stanenum)).Cast<Stanenum>())
+                                    {
+                                        <option value="@stan">@stan</option>
+                                    }
+                                </select>
+                                <textarea name="damageNotes" placeholder="Notatki o uszkodzeniach" class="form-control mb-1"></textarea>
+                                <button type="submit" class="btn btn-danger">Return</button>
+                            </form>
+                        </td>
+                    }
                 </tr>
             }
         </tbody>

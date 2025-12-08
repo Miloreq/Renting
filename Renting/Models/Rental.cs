@@ -17,9 +17,16 @@ namespace Renting.Models
 
         [ForeignKey(nameof(UserId))]
         public User? User { get; set; }
+
         public DateTime FromDate { get; set; }
         public DateTime ToDate { get; set; }
         public string Notes { get; set; }
         public Statusenum Status { get; set; }
+        public DateTime? CheckedOutAt { get; set; }
+        public DateTime? ReturnedAt { get; set; }
+
+        // NOWE POLA
+        public string? Condition { get; set; }
+        public string? DamageNotes { get; set; }
     }
 }

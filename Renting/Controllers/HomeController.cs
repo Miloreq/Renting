@@ -129,6 +129,257 @@ namespace Renting.Controllers
                 : RedirectToAction(nameof(UserRentals));
         }
 
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> Approve(int id)
+        {
+            var userId = _userManager.GetUserId(User);
+            var rental = await _context.Rentals.FirstOrDefaultAsync(r => r.Id == id);
+
+            if (rental == null)
+            {
+                return NotFound();
+            }
+
+            // Tylko w³aœciciel lub admin mo¿e anulowaæ 
+            bool isAdmin = User.IsInRole("Admin");
+            if (rental.UserId != userId && !isAdmin)
+            {
+                return Forbid();
+            }
+
+            if (rental.Status == Statusenum.CheckedOut)
+            {
+                TempData["Message"] = "Nie mo¿na zaakceptowaæ wynajmu, który jest w trakcie realizacji.";
+                return isAdmin
+                    ? RedirectToAction(nameof(AdminRentals))
+                    : RedirectToAction(nameof(UserRentals));
+            }
+
+            if (rental.Status == Statusenum.Returned)
+            {
+                TempData["Message"] = "Nie mo¿na zaakceptowaæ wynajmu, który zosta³ zakoñczony.";
+                return isAdmin
+                    ? RedirectToAction(nameof(AdminRentals))
+                    : RedirectToAction(nameof(UserRentals));
+            }
+
+            if (rental.Status == Statusenum.Cancelled)
+            {
+                TempData["Message"] = "Nie mo¿na zaakceptowaæ wynajmu, który zosta³ anulowany.";
+                return isAdmin
+                    ? RedirectToAction(nameof(AdminRentals))
+                    : RedirectToAction(nameof(UserRentals));
+            }
+
+            if (rental.Status == Statusenum.Rejected)
+            {
+                TempData["Message"] = "Nie mo¿na zaakceptowaæ wynajmu, który zosta³ odrzucony.";
+                return isAdmin
+                    ? RedirectToAction(nameof(AdminRentals))
+                    : RedirectToAction(nameof(UserRentals));
+            }
+
+            if (rental.Status == Statusenum.Approved)
+            {
+                TempData["Message"] = "Wynajem ju¿ zosta³ zaakceptowany.";
+                return isAdmin
+                    ? RedirectToAction(nameof(AdminRentals))
+                    : RedirectToAction(nameof(UserRentals));
+            }
+
+            rental.Status = Statusenum.Approved;
+            await _context.SaveChangesAsync();
+
+            TempData["Message"] = "Wynajem zosta³ zaakceptowany.";
+            return isAdmin
+                ? RedirectToAction(nameof(AdminRentals))
+                : RedirectToAction(nameof(UserRentals));
+        }
+
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> Reject(int id)
+        {
+            var userId = _userManager.GetUserId(User);
+            var rental = await _context.Rentals.FirstOrDefaultAsync(r => r.Id == id);
+
+            if (rental == null)
+            {
+                return NotFound();
+            }
+
+            // Tylko w³aœciciel lub admin mo¿e anulowaæ 
+            bool isAdmin = User.IsInRole("Admin");
+            if (rental.UserId != userId && !isAdmin)
+            {
+                return Forbid();
+            }
+
+            if (rental.Status == Statusenum.CheckedOut)
+            {
+                TempData["Message"] = "Nie mo¿na odrzuciæ wynajmu, który jest w trakcie realizacji.";
+                return isAdmin
+                    ? RedirectToAction(nameof(AdminRentals))
+                    : RedirectToAction(nameof(UserRentals));
+            }
+
+            if (rental.Status == Statusenum.Returned)
+            {
+                TempData["Message"] = "Nie mo¿na odrzuciæ wynajmu, który zosta³ zakoñczony.";
+                return isAdmin
+                    ? RedirectToAction(nameof(AdminRentals))
+                    : RedirectToAction(nameof(UserRentals));
+            }
+
+            if (rental.Status == Statusenum.Cancelled)
+            {
+                TempData["Message"] = "Nie mo¿na odrzuciæ wynajmu, który zosta³ anulowany.";
+                return isAdmin
+                    ? RedirectToAction(nameof(AdminRentals))
+                    : RedirectToAction(nameof(UserRentals));
+            }
+
+            if (rental.Status == Statusenum.Approved)
+            {
+                TempData["Message"] = "Nie mo¿na odrzuciæ wynajmu, który zosat³ ju¿ akceptowany.";
+                return isAdmin
+                    ? RedirectToAction(nameof(AdminRentals))
+                    : RedirectToAction(nameof(UserRentals));
+            }
+
+            if (rental.Status == Statusenum.Rejected)
+            {
+                TempData["Message"] = "Wynajem ju¿ zosta³ odrzucony.";
+                return isAdmin
+                    ? RedirectToAction(nameof(AdminRentals))
+                    : RedirectToAction(nameof(UserRentals));
+            }
+
+            rental.Status = Statusenum.Rejected;
+            await _context.SaveChangesAsync();
+
+            TempData["Message"] = "Wynajem zosta³ odrzucony.";
+            return isAdmin
+                ? RedirectToAction(nameof(AdminRentals))
+                : RedirectToAction(nameof(UserRentals));
+        }
+
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> CheckOut(int id)
+        {
+            var userId = _userManager.GetUserId(User);
+            var rental = await _context.Rentals.FirstOrDefaultAsync(r => r.Id == id);
+
+            if (rental == null)
+            {
+                return NotFound();
+            }
+
+            bool isAdmin = User.IsInRole("Admin");
+            if (rental.UserId != userId && !isAdmin)
+            {
+                return Forbid();
+            }
+
+            if (rental.Status == Statusenum.Rejected)
+            {
+                TempData["Message"] = "Nie mo¿na realizowaæ wynajmu, który jest odrzucony.";
+                return isAdmin
+                    ? RedirectToAction(nameof(AdminRentals))
+                    : RedirectToAction(nameof(UserRentals));
+            }
+
+            if (rental.Status == Statusenum.Returned)
+            {
+                TempData["Message"] = "Nie mo¿na realizowaæ wynajmu, który zosta³ zakoñczony.";
+                return isAdmin
+                    ? RedirectToAction(nameof(AdminRentals))
+                    : RedirectToAction(nameof(UserRentals));
+            }
+
+            if (rental.Status == Statusenum.Cancelled)
+            {
+                TempData["Message"] = "Nie mo¿na realizowaæ wynajmu, który zosta³ anulowany.";
+                return isAdmin
+                    ? RedirectToAction(nameof(AdminRentals))
+                    : RedirectToAction(nameof(UserRentals));
+            }
+
+            if (rental.Status == Statusenum.CheckedOut)
+            {
+                TempData["Message"] = "Wynajem ju¿ jest realizowany.";
+                return isAdmin
+                    ? RedirectToAction(nameof(AdminRentals))
+                    : RedirectToAction(nameof(UserRentals));
+            }
+
+            rental.Status = Statusenum.CheckedOut;
+            rental.CheckedOutAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+
+            TempData["Message"] = "Wynajem jest realizowany.";
+            return isAdmin
+                ? RedirectToAction(nameof(AdminRentals))
+                : RedirectToAction(nameof(UserRentals));
+        }
+
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> Return(int id, string condition, string damageNotes)
+        {
+            var userId = _userManager.GetUserId(User);
+            var rental = await _context.Rentals
+                .Include(r => r.Assets)
+                .FirstOrDefaultAsync(r => r.Id == id);
+
+            if (rental == null)
+                return NotFound();
+
+            bool isAdmin = User.IsInRole("Admin");
+            if (rental.UserId != userId && !isAdmin)
+                return Forbid();
+
+            if (rental.Status == Statusenum.Rejected)
+            {
+                TempData["Message"] = "Nie mo¿na zwróciæ wynajmu, który jest odrzucony.";
+                return isAdmin ? RedirectToAction(nameof(AdminRentals)) : RedirectToAction(nameof(UserRentals));
+            }
+            if (rental.Status == Statusenum.Approved || rental.Status == Statusenum.Cancelled)
+            {
+                TempData["Message"] = "Nie mo¿na zwróciæ wynajmu, który nie zosta³ wydany.";
+                return isAdmin ? RedirectToAction(nameof(AdminRentals)) : RedirectToAction(nameof(UserRentals));
+            }
+            if (rental.Status == Statusenum.Returned)
+            {
+                TempData["Message"] = "Wynajem ju¿ jest oddany.";
+                return isAdmin ? RedirectToAction(nameof(AdminRentals)) : RedirectToAction(nameof(UserRentals));
+            }
+
+            rental.Status = Statusenum.Returned;
+            rental.ReturnedAt = DateTime.UtcNow;
+            rental.Condition = condition;
+            rental.DamageNotes = damageNotes;
+
+            // Aktualizacja stanu assetu
+            if (rental.Assets != null && Enum.TryParse<Stanenum>(condition, out var stan))
+            {
+                // Pobierz asset z kontekstu, aby mieæ pewnoœæ, ¿e jest œledzony
+                var asset = await _context.Assets.FirstOrDefaultAsync(a => a.Id == rental.Assets.Id);
+                if (asset != null)
+                {
+                    asset.Condition = stan;
+                    _context.Entry(asset).State = EntityState.Modified;
+                }
+            }
+
+            await _context.SaveChangesAsync();
+
+            TempData["Message"] = "Wynajem jest oddany.";
+            return isAdmin ? RedirectToAction(nameof(AdminRentals)) : RedirectToAction(nameof(UserRentals));
+        }
+
         [Authorize(Roles ="Admin")]
         public IActionResult Assets()
         {
@@ -202,9 +453,21 @@ namespace Renting.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
                 return Forbid();
-            model.UserId = userId;
+            model.UserId = userId;  
 
-            // Walidacja: FromDate nie mo¿e byæ po ToDate
+            if (string.IsNullOrWhiteSpace(model.Notes))
+            {
+                ModelState.AddModelError("", "Notatka jest wymagana.");
+                ViewBag.Assets = _context.Assets
+                    .Select(a => new SelectListItem
+                    {
+                        Value = a.Id.ToString(),
+                        Text = a.Name
+                    })
+                    .ToList();
+                return View("CreateRental", model);
+            }
+
             if (model.FromDate > model.ToDate)
             {
                 ModelState.AddModelError("", "Data rozpoczêcia nie mo¿e byæ po dacie zakoñczenia.");
