@@ -43,6 +43,8 @@ namespace Renting
                 .AddEntityFrameworkStores<AppDbContext>()
                 .AddDefaultTokenProviders();
 
+            builder.Services.AddHostedService<RentalCleanupHostedService>();
+
             var app = builder.Build();
 
             await SeedService.SeedDataBase(app.Services);
@@ -61,6 +63,28 @@ namespace Renting
             app.UseRouting();
 
             app.UseAuthorization();
+
+            app.Use(async (context, next) =>
+            {
+                if (context.User.Identity?.IsAuthenticated == true)
+                {
+                    var db = context.RequestServices.GetRequiredService<RentingContext>();
+                    var userId = context.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                    if (!string.IsNullOrEmpty(userId))
+                    {
+                        var approvedRental = await db.Rentals
+                            .Where(r => r.UserId == userId && r.Status == Statusenum.Approved)
+                            .OrderByDescending(r => r.Id)
+                            .FirstOrDefaultAsync();
+
+                        if (approvedRental != null)
+                        {
+                            context.Items["ApprovedRentalMessage"] = "Masz zatwierdzone wypo¿yczenie!";
+                        }
+                    }
+                }
+                await next();
+            });
 
             app.MapControllerRoute(
                 name: "default",

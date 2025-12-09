@@ -10,6 +10,12 @@
     <a asp-controller="Home" asp-action="CreateEditAsset" class="btn btn-primary">Dodawaj/Edytuj</a>
     <br />
     <hr />
+
+    @if (TempData["Message"] != null)
+    {
+        <div class="alert alert-warning">@TempData["Message"]</div>
+    }
+
     <table class="table w-75 mx-auto">
         <thead>
             <tr>
@@ -18,31 +24,29 @@
                 <th>Model</th>
                 <th>Numer Seryjny</th>
                 <th>Kod Inventarzu</th>
-                <th>Kondycja</th>
-                <th>Lokalizacja</th>
-                <th>Dzia³a?</th>
                 <th>Akcje</th>
             </tr>
         </thead>
         <tbody>
-            @{
-                foreach (var asset in Model)
-                {
-                    <tr>
-                        <td>@asset.Name</td>
-                        <td>@asset.Manufacturer</td>
-                        <td>@asset.Model</td>
-                        <td>@asset.SerialNumber</td>
-                        <td>@asset.InventoryCode</td>
-                        <td>@asset.Condition</td>
-                        <td>@asset.Location</td>
-                        @if (asset.IsActive == true) {<td>Dzia³a</td>} else {<td>Niedzia³a</td>}
-                        <td>
-                            <a asp-action="CEA" asp-route-id="@asset.Id" class="maxbtn text-decoration-none"><span class="me-1">&#x270E;</span></a>
-                            <a asp-action="DelAssets" asp-route-id="@asset.Id" class="maxbtn text-decoration-none"><span class="me-1">&#x1F5D1;</span></a>
-                        </td>
-                    </tr>
-                }
+            @foreach (var asset in Model)
+            {
+                <tr>
+                    <td>@asset.Name</td>
+                    <td>@asset.Manufacturer</td>
+                    <td>@asset.Model</td>
+                    <td>@asset.SerialNumber</td>
+                    <td>@asset.InventoryCode</td>
+                    <td>
+                        <a asp-action="CreateEditAsset" asp-route-id="@asset.Id" class="maxbtn text-decoration-none"><span class="me-1">&#x270E;</span></a>
+                        <form asp-action="DelAssets" asp-route-id="@asset.Id" method="post" style="display:inline;">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="maxbtn text-decoration-none" style="background:none;border:none;padding:0;">
+                                <span class="me-1">&#x1F5D1;</span>
+                            </button>
+                        </form>
+                        <a asp-action="AssetDetails" asp-route-id="@asset.Id" class="maxbtn text-decoration-none"><span class="me-1">&#x2699;</span></a>
+                    </td>
+                </tr>
             }
         </tbody>
     </table>

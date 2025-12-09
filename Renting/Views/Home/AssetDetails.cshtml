@@ -1,0 +1,45 @@
+﻿@model Renting.ViewModels.AssetDetailsViewModel
+
+@{
+    ViewData["Title"] = "Szczegóły sprzętu";
+}
+
+<div class="container mt-4">
+    <h2>Szczegóły sprzętu</h2>
+    <table class="table w-50">
+        <tr><th>Nazwa</th><td>@Model.Asset.Name</td></tr>
+        <tr><th>Producent</th><td>@Model.Asset.Manufacturer</td></tr>
+        <tr><th>Model</th><td>@Model.Asset.Model</td></tr>
+        <tr><th>Numer Seryjny</th><td>@Model.Asset.SerialNumber</td></tr>
+        <tr><th>Kod Inwentarzu</th><td>@Model.Asset.InventoryCode</td></tr>
+        <tr><th>Kondycja</th><td>@Model.Asset.Condition</td></tr>
+        <tr><th>Lokalizacja</th><td>@Model.Asset.Location</td></tr>
+        <tr><th>Działa?</th><td>@(Model.Asset.IsActive ? "Działa" : "Niedziała")</td></tr>
+    </table>
+
+    <h3 class="mt-5">Historia wypożyczeń</h3>
+    <table class="table w-75">
+        <thead>
+            <tr>
+                <th>Użytkownik</th>
+                <th>Od</th>
+                <th>Do</th>
+                <th>Szczegóły</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var rental in Model.Rentals)
+            {
+                <tr>
+                    <td>@rental.User?.FullName</td>
+                    <td>@rental.FromDate.ToShortDateString()</td>
+                    <td>@rental.ToDate.ToShortDateString()</td>
+                    <td>
+                        <a asp-action="RentalDetails" asp-route-id="@rental.Id" class="btn btn-info btn-sm">Szczegóły</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <a asp-action="Assets" class="btn btn-secondary mt-3">Powrót</a>
+</div>

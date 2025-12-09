@@ -19,3 +19,10 @@
     width: 100%;
     opacity: 0.9;
 }
+
+.Sukcess-alert-mine {
+    border: 2px solid green;
+    border-radius: 5px;
+    color: green;
+    background-color: lawngreen
+}

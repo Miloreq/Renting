@@ -6,6 +6,12 @@
     @if (signInManager.IsSignedIn(User))
     {   
         <li class="nav-item me-3">
+            @if (Context.Items["ApprovedRentalMessage"] is string msg)
+            {
+                <div class="text-center Sukcess-alert-mine">Sukces!</div>
+            }
+        </li>
+        <li class="nav-item me-3">
             @if (User.Identity.IsAuthenticated)
             {
                 var currentUser = await userManager.GetUserAsync(User);

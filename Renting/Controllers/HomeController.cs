@@ -5,8 +5,11 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Renting.Data;
 using Renting.Models;
+using Renting.ViewModels;
 using System.Diagnostics;
+using System.Linq;
 using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace Renting.Controllers
 {
@@ -388,11 +391,19 @@ namespace Renting.Controllers
             return View(assets);
         }
 
-        public IActionResult CreateEditAsset()
+        [Authorize(Roles = "Admin")]
+        public IActionResult CreateEditAsset(int? id)
         {
             ViewBag.Categories = Enum.GetValues(typeof(Renting.Models.Stanenum)).Cast<Renting.Models.Stanenum>();
             ViewBag.TF = Enum.GetValues(typeof(Renting.Models.TFenum)).Cast<Renting.Models.TFenum>();
-            return View(new Asset()); // <-- przekazanie pustego modelu
+
+            if (id.HasValue)
+            {
+                var asset = _context.Assets.FirstOrDefault(a => a.Id == id.Value);
+                if (asset != null)
+                    return View(asset);
+            }
+            return View(new Asset());
         }
 
         [HttpPost]
@@ -413,11 +424,21 @@ namespace Renting.Controllers
             return RedirectToAction(nameof(Assets));
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public IActionResult DelAssets(int id)
         {
             var assetInDb = _context.Assets.SingleOrDefault(asset => asset.Id == id);
             if (assetInDb != null)
             {
+                bool hasRentals = _context.Rentals.Any(r => r.AssetId == id);
+                if (hasRentals)
+                {
+                    TempData["Message"] = "Nie mo¿na usun¹æ assetu, poniewa¿ istniej¹ powi¹zane wynajmy.";
+                    return RedirectToAction("Assets");
+                }
+
                 _context.Assets.Remove(assetInDb);
                 _context.SaveChanges();
             }
@@ -431,7 +452,7 @@ namespace Renting.Controllers
                 .Select(a => new SelectListItem
                 {
                     Value = a.Id.ToString(),
-                    Text = a.Name // lub inna w³aœciwoœæ opisuj¹ca
+                    Text = a.Name
                 })
                 .ToList();
 
@@ -481,7 +502,6 @@ namespace Renting.Controllers
                 return View("CreateRental", model);
             }
 
-            // Sprawdzenie kolizji dat dla tego samego AssetId
             bool isCollision = _context.Rentals
                 .Any(r =>
                     r.AssetId == model.AssetId &&
@@ -520,6 +540,71 @@ namespace Renting.Controllers
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> DelRental(int id)
+        {
+            var rental = await _context.Rentals.FirstOrDefaultAsync(r => r.Id == id);
+
+            if (rental == null)
+            {
+                TempData["Message"] = "Nie znaleziono wynajmu.";
+                return RedirectToAction(nameof(AdminRentals));
+            }
+
+            if (rental.Status != Statusenum.Cancelled &&
+                rental.Status != Statusenum.Rejected &&
+                rental.Status != Statusenum.Returned)
+            {
+                TempData["Message"] = "Mo¿na usuwaæ tylko wynajmy o statusie: Cancelled, Rejected lub Returned.";
+                return RedirectToAction(nameof(AdminRentals));
+            }
+
+            _context.Rentals.Remove(rental);
+            await _context.SaveChangesAsync();
+
+            TempData["Message"] = "Wynajem zosta³ usuniêty.";
+            return RedirectToAction(nameof(AdminRentals));
+        }
+
+        public async Task<IActionResult> AssetDetails(int id)
+        {
+            var asset = await _context.Assets.FindAsync(id);
+            if (asset == null)
+                return NotFound();
+
+            var rentals = await _context.Rentals
+                .Include(r => r.User)
+                .Where(r => r.AssetId == id)
+                .OrderByDescending(r => r.FromDate)
+                .ToListAsync();
+
+            var vm = new AssetDetailsViewModel
+            {
+                Asset = asset,
+                Rentals = rentals
+            };
+
+            return View(vm);
+        }
+
+        public IActionResult RentalDetails(int id)
+        {
+            var rental = _context.Rentals
+                .Include(r => r.Assets)
+                .Include(r => r.User)
+                .FirstOrDefault(r => r.Id == id);
+
+            if (rental == null)
+            {
+                TempData["Message"] = "Nie znaleziono wypo¿yczenia.";
+                return RedirectToAction("AdminRentals");
+            }
+
+            return View(rental);
         }
     }
 }
