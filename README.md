@@ -21,13 +21,13 @@ Renting to aplikacja webowa do zarządzania wypożyczalnią sprzętu IT, zbudowa
 ## Uruchomienie lokalne
 
 1. Sklonuj repozytorium:
-'git clone https://github.com/Miloreq/Renting.git'
+`git clone https://github.com/Miloreq/Renting.git`
 2. Przejdź do katalogu projektu:
-'cd Renting'
+`cd Renting`
 3. Przygotuj bazę danych (np. migracje EF Core):
-'dotnet ef database update'
+`dotnet ef database update`
 4. Uruchom aplikację:
-'dotnet run'
+`dotnet run`
 5. Otwórz przeglądarkę i przejdź pod adres `https://localhost:5001`
 
 ## Struktura projektu
